@@ -136,9 +136,6 @@ cap.release()
 out.release()
 cv2.destroyAllWindows()
 
-
-
-
 # Breddegrad (Latitude):
 # Horisontale linjer der løber parallelt med Ækvator. Ækvator er 0 grader.
 # Nord for Ækvator betegnes "Nord" og angives som positive tal,
