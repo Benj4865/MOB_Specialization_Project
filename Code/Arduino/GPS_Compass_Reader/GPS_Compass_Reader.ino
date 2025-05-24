@@ -8,10 +8,11 @@
 #include "AK8975.h"
 #include "MPU6050.h"
 
-// Arduino library that handles the hardware I2C single-wire connections.
+// Arduino library that handles the hardware I2C single-wire connections
 #include "Wire.h"
 
-// 
+//A library that contains tools for parsing NMEA data to a more readable format
+//https://arduiniana.org/libraries/tinygpsplus/
 #include <TinyGPS++.h>
 
 // Standard address for the compass is 0x0c so we will define it here.
@@ -42,7 +43,7 @@ float longi;
 void setup()
 {
 
-  //
+  //Starting the Serial1 hardware connetion on Arduino DUE
   Serial1.begin(9600);
   
   // Calibration-values from "Compass_Calibration.ino"
@@ -62,7 +63,7 @@ void setup()
   // Opening I2C connection 
   Wire.begin();
   
-  // Starting serial communication with computer
+  // Starting USB serial communication with computer
   Serial.begin(9600);  
   Serial.println("Wire connection and Serial connection started....");
 
@@ -84,7 +85,6 @@ void loop()
   //getHeading 3 times.
   comp.getHeading(&vx, &vy, &vz);
 
-  
   //Calculate the calibrated values for the atan2 calculation below
   calibrated_x = (short)(((long)(vx - cal_offset_x) * (long)SENSOR_RANGE) / (long)cal_range_x);
   calibrated_y = (short)(((long)(vy - cal_offset_y) * (long)SENSOR_RANGE) / (long)cal_range_y);  
@@ -112,18 +112,12 @@ void loop()
         Serial.print(",");
         Serial.print(latt);
         Serial.print(",");
-        Serial.print(longi);
-        //Added control-char to make sure that the line is complete
-        Serial.println("#");
-        
+        Serial.println(longi);
         
       }
     }
   }
 
-
-
   // Works best if running about 10 times pr second.
   delay(100);
-  
 }
