@@ -149,16 +149,3 @@ cv2.destroyAllWindows()
 # Vest for Greenwich betegnes "Vest" og angives som negative tal,
 # øst for Greenwich betegnes som "Øst" og angives med positive tal.
 # Roskilde er 12,08 grader Øst (12,08 grader).
-
-
-
-
-
-
-
-
-
-
-
-
-

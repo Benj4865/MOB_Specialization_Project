@@ -11,6 +11,9 @@
 // Arduino library that handles the hardware I2C single-wire connections.
 #include "Wire.h"
 
+// 
+#include <TinyGPS++.h>
+
 // Standard address for the compass is 0x0c so we will define it here.
 AK8975 comp(0x0c);
 
@@ -20,7 +23,8 @@ MPU6050 mpu;
 // Defining the size/range that we will later map compass calculations to
 #define SENSOR_RANGE 1024
 
-
+//
+TinyGPSPlus gps;
 
 // Setting up the 16-bit integers to hold the compass heading in 3 axis. 
 int16_t vx, vy, vz;
@@ -32,11 +36,15 @@ short calibrated_x, calibrated_y;
 // Float for keeping track of the heading in degress
 float c_heading;
 
-
+float latt; 
+float longi;
 
 void setup()
 {
 
+  //
+  Serial1.begin(9600);
+  
   // Calibration-values from "Compass_Calibration.ino"
   cal_min_x = -168;
   cal_max_x = 119;
@@ -84,8 +92,30 @@ void loop()
   // Calculation to go from vectors in getHeading to degrees 
   c_heading = 180 - atan2((double)calibrated_y, (double)calibrated_x) * 180.0/3.14159265;
 
+  //Serial.print(c_heading);
+  //Serial.println("°");
+
+  //Checking if a new posistion is in the serial buffer of Serial1
+  while (Serial1.available() > 0
+  {
+    //Encoding the NMEA data
+    if (gps.encode(Serial1.read()))
+    {
+      //If a valid 2D fix is found
+      if (gps.location.isValid())
+      {
+        // Extract the lattitude and longitude from the NMEA data
+        latt = gps.location.lat();
+        longi = gps.location.lng();
+      }
+    }
+  }
+
   Serial.print(c_heading);
-  Serial.println("°");
+  Serial.print(",");
+  Serial.print(latt);
+  Serial.print(",");
+  Serial.println(longi);
 
   // Works best if running about 10 times pr second.
   delay(100);
