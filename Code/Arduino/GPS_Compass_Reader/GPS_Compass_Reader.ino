@@ -96,7 +96,7 @@ void loop()
   //Serial.println("°");
 
   //Checking if a new posistion is in the serial buffer of Serial1
-  while (Serial1.available() > 0
+  while (Serial1.available() > 0)
   {
     //Encoding the NMEA data
     if (gps.encode(Serial1.read()))
@@ -107,15 +107,21 @@ void loop()
         // Extract the lattitude and longitude from the NMEA data
         latt = gps.location.lat();
         longi = gps.location.lng();
+
+        Serial.print(c_heading);
+        Serial.print(",");
+        Serial.print(latt);
+        Serial.print(",");
+        Serial.print(longi);
+        //Added control-char to make sure that the line is complete
+        Serial.println("#");
+        
+        
       }
     }
   }
 
-  Serial.print(c_heading);
-  Serial.print(",");
-  Serial.print(latt);
-  Serial.print(",");
-  Serial.println(longi);
+
 
   // Works best if running about 10 times pr second.
   delay(100);
