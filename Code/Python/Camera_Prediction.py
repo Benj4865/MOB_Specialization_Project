@@ -1,5 +1,3 @@
-from ast import Try
-from re import split
 import cv2
 import math
 import serial
@@ -16,6 +14,12 @@ IMAGE_HEIGHT = 1080
 SCALE_FACTOR = 77      # Full HD (1920x1080) images from drone camera
 
 
+# Setting up variables with None values to enable a check if they are empty
+latitude = None
+longitude = None
+heading = None
+
+
 # Creating the Serial object used for the communication
 ser = serial.Serial( 
     port='COM12',   # What port the Arduino is connected
@@ -28,8 +32,12 @@ ser = serial.Serial(
 
 # Standard way of reading data from a serial port
 def read_Serial_data():
+    return (123,55.123456,12.123456)
     try:
         up_data = ser.readline()
+        #Convert form binary to string
+        up_data = up_data.decode('ascii')
+
         split_data = up_data.split(",")
 
         heading = float(split_data[0])
@@ -79,20 +87,22 @@ def calc_mob_pos(image_center_geo_pos, image_heading, detection_coordinate):
 
 
 # Load YOLOv11 model
-model = YOLO('best4.pt')  # Replace with the correct path/model name
+model = YOLO('best3.pt')  # Replace with the correct path/model name
 
 # Load video file
-video_path ='Validation_Video_1.mp4'
+video_path ='C:\\Users\\bena3\\Videos\\Project 2.mp4'
 cap = cv2.VideoCapture(video_path)
 
 if not cap.isOpened():
     print("Error opening video file.")
     exit()
 
-# Output video settings
+output_path = 'output_yolov11.avi'
+fourcc = cv2.VideoWriter_fourcc(*'XVID')
+fps = cap.get(cv2.CAP_PROP_FPS)
 width = int(1920)
 height = int(1080)
-
+out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
 
 frame = 0
 
@@ -105,6 +115,13 @@ while cap.isOpened():
     results = model(frame)[0]
     detectionID = 0
 
+    # Getting newest data from serial
+    serial_data = read_Serial_data()
+
+    #Only update heading, latitude and longitude are valid.
+    if serial_data is not None:
+        (heading, latitude, longitude) = serial_data
+        image_center_geo_pos = (latitude, longitude)
 
     # Draw detections
     for box in results.boxes:
@@ -119,31 +136,30 @@ while cap.isOpened():
         detection_coordinate = z1,z2
         d = str(detection_coordinate)
         print("Detection_Coordinate: " + d)
-        
-        # Getting newest data from serial
-        (heading,latitude, longitude) = read_Serial_data()
-        image_center_geo_pos = (latitude, longitude)
 
-        # Calculating the position of the detection based on the image center position, heading and detection coordinate
-        mob_geo_pos = calc_mob_pos(image_center_geo_pos, heading, detection_coordinate)
+        if latitude is not None and longitude is not None and heading is not None:
 
-        s = str(mob_geo_pos)
-        print(s)
-        text = str(detectionID)
-        cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-        cv2.putText(frame, text + ": " + label, (x1, y1 - 5),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-        if detectionID == 0:
-            cv2.putText(frame, text + " " + s,(100,100),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-        elif detectionID == 1:
-            cv2.putText(frame, text + " " + s,(100,200),
+            # Calculating the position of the detection based on the image center position, heading and detection coordinate
+            mob_geo_pos = calc_mob_pos(image_center_geo_pos, heading, detection_coordinate)
+
+            #s = str(mob_geo_pos)
+            #print(s)
+            """
+            text = str(detectionID)
+            cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+            cv2.putText(frame, text + ": " + label, (x1, y1 - 5),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-        detectionID += 1
+            if detectionID == 0:
+                cv2.putText(frame, text + " " + s,(100,100),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+            elif detectionID == 1:
+                cv2.putText(frame, text + " " + s,(100,200),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+            detectionID += 1
 
-    cv2.imshow("YOLOv11 Detection", frame)
-    out.write(frame)
-
+        #cv2.imshow("YOLOv11 Detection", frame)
+        out.write(frame)
+"""
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
