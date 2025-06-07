@@ -1,83 +1,76 @@
+## Importing pakages and setting up the environment for YOLOv11 object detection and the calculations
 import cv2
 import math
+from ultralytics import YOLO 
 
-from ultralytics import YOLO  # Make sure this supports YOLOv11
 
-from GPS import detection_coordinate
-
-# CONSTANTS
+## CONSTANTS for the videoframe-size
 IMAGE_WIDTH = 1920
 IMAGE_HEIGHT = 1080
 
-#SCALE_FACTOR = 14.8     # Parken test image
-SCALE_FACTOR = 77      # Full HD (1920x1080) images from drone camera
+## Calculated from the drone video 
+## Described in report
+SCALE_FACTOR = 77
 
-
+## Function for calculating the position of a detected object in the real world
 def calc_mob_pos(image_center_geo_pos, image_heading, detection_coordinate):
-    # Set up some local variables to make the code easier to read
+
+    ## Set up some local variables to make the code easier to read
     angle_rad = math.radians(image_heading) *-1
     detection_x, detection_y = detection_coordinate
     image_center_x = IMAGE_WIDTH / 2
     image_center_y = IMAGE_HEIGHT / 2
 
-    # Rotation matrix multiplication to get rotated x & y
+    ## Rotation matrix multiplication to get image coordinates "rotated on x & y"
     relative_x = (detection_x - image_center_x) * math.cos(angle_rad) - (image_center_y - detection_y) * math.sin(angle_rad)
     relative_y = (detection_x - image_center_x) * math.sin(angle_rad) + (image_center_y - detection_y) * math.cos(angle_rad)
     true_detection_x = image_center_x + relative_x
     true_detection_y = image_center_y + relative_y
 
-    # Calculate detected object's distance (meters) relative to center of image
-    # This first alpha version does not do lens correction, but it is still pretty accurate (error is less than 50 cm)
+    ## Calculate detected object's distance (meters) relative to center of image
     distance_east = (true_detection_x - image_center_x) / SCALE_FACTOR
     distance_north = (true_detection_y - image_center_y) / SCALE_FACTOR
 
-    # Calculate real world position by offsetting image center position with distances calculated
-    # R is earths radius in meters used for Haversine calculations
+    ## Calculate real world position by offsetting image center position with distances calculated
+    ## R is earths radius in meters used for Haversine calculations
     R = 6378137
 
-    # Offset in radians
+    ## Offset in radians
     offset_north_rad = distance_north / R
     offset_east_rad = distance_east / (R * math.cos(math.pi * image_center_geo_pos[0] / 180))
 
+    ## Calculate the new latitude and longitude based on the offsets
     mob_latitude = image_center_geo_pos[0] + offset_north_rad * 180 / math.pi
     mob_longitude = image_center_geo_pos[1] + offset_east_rad * 180 / math.pi
 
+    ## Saving the results in a tuple
     mob_geo_pos = (mob_latitude, mob_longitude)
 
+    ## Return the calculated position of the detected person
     return mob_geo_pos
 
 
-# MAIN
-#image_center_geo_pos = (55.702718, 12.572308)   # Centre spot in Parken
+## Manually inputting the center position of the image in geo-coordinates
 image_center_geo_pos2 = (55.6541372, 12.1439169)
 
-
-
-# Heading of drone in degrees (0=Heading North, 90=Heading East, ...))
-#image_heading = 43.5    # Heading of test image of Parken
+##  Manually inputting heading of drone in degrees (0=Heading North, 90=Heading East, ...))
 image_heading = 3
 
-# Coordinate of detected object in pixels
-#detection_coordinate = (346, 539)       # Left penalty spot
-#detection_coordinate = (1736, 38)      # Top right corner flag
 
-#mob_geo_pos = calc_mob_pos(image_center_geo_pos2, image_heading, detection_coordinate)
+## Load the pretrained YOLOv11 model
+model = YOLO('best.pt')
 
-#print(mob_geo_pos)
-
-
-# Load YOLOv11 model
-model = YOLO('best4.pt')  # Replace with the correct path/model name
-
-# Load video file
+## Load video file from disk for prediction
 video_path ='Validation_Video_1.mp4'
+## Open the video file
 cap = cv2.VideoCapture(video_path)
 
+## Check if the video opened successfully
 if not cap.isOpened():
     print("Error opening video file.")
     exit()
 
-# Output video settings
+## Setting up the output settings for the debug video
 output_path = 'output_yolov11.avi'
 fourcc = cv2.VideoWriter_fourcc(*'XVID')
 fps = cap.get(cv2.CAP_PROP_FPS)
