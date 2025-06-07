@@ -104,7 +104,7 @@ while cap.isOpened():
         cls = int(box.cls[0])
         label = f"{model.names[cls]} {conf:.2f}"
 
-        #detection_coordinate = 0,0
+        #Setting up values for detection coordinate
         z1 = x1
         z2 = y1
         detection_coordinate = z1,z2

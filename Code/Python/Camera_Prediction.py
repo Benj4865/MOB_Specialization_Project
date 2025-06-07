@@ -89,20 +89,18 @@ def calc_mob_pos(image_center_geo_pos, image_heading, detection_coordinate):
 # Load YOLOv11 model
 model = YOLO('best3.pt')  # Replace with the correct path/model name
 
-# Load video file
-video_path ='C:\\Users\\bena3\\Videos\\Project 2.mp4'
-cap = cv2.VideoCapture(video_path)
+# Open Webcam
+cap = cv2.VideoCapture(0)
 
 if not cap.isOpened():
     print("Error opening video file.")
     exit()
 
-output_path = 'output_yolov11.avi'
-fourcc = cv2.VideoWriter_fourcc(*'XVID')
+
 fps = cap.get(cv2.CAP_PROP_FPS)
-width = int(1920)
-height = int(1080)
-out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
+width = IMAGE_WIDTH
+height = IMAGE_WIDTH
+
 
 frame = 0
 
@@ -142,24 +140,7 @@ while cap.isOpened():
             # Calculating the position of the detection based on the image center position, heading and detection coordinate
             mob_geo_pos = calc_mob_pos(image_center_geo_pos, heading, detection_coordinate)
 
-            #s = str(mob_geo_pos)
-            #print(s)
-            """
-            text = str(detectionID)
-            cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-            cv2.putText(frame, text + ": " + label, (x1, y1 - 5),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-            if detectionID == 0:
-                cv2.putText(frame, text + " " + s,(100,100),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-            elif detectionID == 1:
-                cv2.putText(frame, text + " " + s,(100,200),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-            detectionID += 1
 
-        #cv2.imshow("YOLOv11 Detection", frame)
-        out.write(frame)
-"""
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 

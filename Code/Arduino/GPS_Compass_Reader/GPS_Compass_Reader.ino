@@ -1,7 +1,6 @@
 // Some of the code in this script is inspired by the way communication is handled in the
 // Example files in the libraries. No AI has been used for creating this code
 
-
 // Using a custom libraries made by jrowberg on github that handles the "virtual" I2C communication to the compass and MPU chip
 // Libraries: https://github.com/jrowberg/i2cdevlib/tree/master
 #include  "I2Cdev.h"
@@ -37,8 +36,8 @@ short calibrated_x, calibrated_y;
 // Float for keeping track of the heading in degress
 float c_heading;
 
-float latt; 
-float longi;
+float latt = -400; 
+float longi = -400 ;
 
 void setup()
 {
@@ -92,11 +91,8 @@ void loop()
   // Calculation to go from vectors in getHeading to degrees 
   c_heading = 180 - atan2((double)calibrated_y, (double)calibrated_x) * 180.0/3.14159265;
 
-  //Serial.print(c_heading);
-  //Serial.println("°");
-
   //Checking if a new posistion is in the serial buffer of Serial1
-  while (Serial1.available() > 0)
+  while(Serial1.available() > 0)
   {
     //Encoding the NMEA data
     if (gps.encode(Serial1.read()))
@@ -107,17 +103,21 @@ void loop()
         // Extract the lattitude and longitude from the NMEA data
         latt = gps.location.lat();
         longi = gps.location.lng();
-
-        Serial.print(c_heading);
-        Serial.print(",");
-        Serial.print(latt);
-        Serial.print(",");
-        Serial.println(longi);
-        
       }
     }
   }
 
-  // Works best if running about 10 times pr second.
-  delay(100);
+  // Ceck if valid location has been obtained.
+  // We still send the last location even if a new one is not obtained.
+  if((latt != -400) && (longi != -400))
+  {
+    Serial.print(c_heading);
+    Serial.print(",");
+    Serial.print(latt);
+    Serial.print(",");
+    Serial.println(longi);
+  }
+  // when waiting 200ms it sends about 3-4 times a second
+  delay(200);
+  
 }
