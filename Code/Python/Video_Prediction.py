@@ -1,4 +1,5 @@
 ## Importing pakages and setting up the environment for YOLOv11 object detection and the calculations
+## Some of the generic setup and runinng of the YOLOv11 model is based on the Ultralytics YOLOv11 documentation at: https://docs.ultralytics.com/models/yolo11/#usage-examples
 import cv2
 import math
 from ultralytics import YOLO 
@@ -74,19 +75,23 @@ if not cap.isOpened():
 output_path = 'output_yolov11.avi'
 fourcc = cv2.VideoWriter_fourcc(*'XVID')
 fps = cap.get(cv2.CAP_PROP_FPS)
-width = int(1920)
-height = int(1080)
+width = IMAGE_WIDTH
+height = IMAGE_HEIGHT
 out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
 
+## Keeping a counter of the amount of frames
 frame = 0
 
+## Looping through the videos frames from the beginning
 while cap.isOpened():
     ret, frame = cap.read()
     if not ret:
         break
 
-    # Run inference
+    # Run inference using the model
     results = model(frame)[0]
+
+    ## Setting up detectionID to keep track of the number of people detected
     detectionID = 0
 
 
@@ -97,12 +102,14 @@ while cap.isOpened():
         cls = int(box.cls[0])
         label = f"{model.names[cls]} {conf:.2f}"
 
-        #detection_coordinate = 0,0
+        ## Setting up the detection coordinate
         z1 = x1
         z2 = y1
         detection_coordinate = z1,z2
         d = str(detection_coordinate)
+        ## Print the detection coordinate for debugging
         print("Detection_Coordinate: " + d)
+
         mob_geo_pos = calc_mob_pos(image_center_geo_pos2, 0.0, detection_coordinate)
 
         s = str(mob_geo_pos)
@@ -128,17 +135,3 @@ while cap.isOpened():
 cap.release()
 out.release()
 cv2.destroyAllWindows()
-
-# Breddegrad (Latitude):
-# Horisontale linjer der løber parallelt med Ækvator. Ækvator er 0 grader.
-# Nord for Ækvator betegnes "Nord" og angives som positive tal,
-# syd for Ækvator betegnes som "Syd" og angives med negative tal.
-# Nordpolen er 90 grader Nord (90 grader), Sydpolen er 90 grader Syd (-90 grader),
-# Roskilde er 55,6 grader Nord (55,6 grader).
-#
-
-# Længdegrad (Longitude):
-# Vertikale linjer der løber fra Nordpolen til Sydpolen. 0 grader går gennem Greenwich-observatoriet.
-# Vest for Greenwich betegnes "Vest" og angives som negative tal,
-# øst for Greenwich betegnes som "Øst" og angives med positive tal.
-# Roskilde er 12,08 grader Øst (12,08 grader).

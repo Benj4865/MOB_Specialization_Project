@@ -1,21 +1,21 @@
-
+## Importing pakages and setting up the environment for YOLOv11 object detection and the calculations
+## Some of the generic setup and runinng of the YOLOv11 model is based on the Ultralytics YOLOv11 documentation at: https://docs.ultralytics.com/models/yolo11/#usage-examples
 import cv2
 import math
 import serial
-
 from ultralytics import YOLO
 
-from GPS import detection_coordinate
 
-# CONSTANTS
+## CONSTANTS for the videoframe-size
 IMAGE_WIDTH = 1920
 IMAGE_HEIGHT = 1080
 
+## Calculated from the drone video 
+## Described in report
+SCALE_FACTOR = 77
 
-SCALE_FACTOR = 77      # Full HD (1920x1080) images from drone camera
 
-
-# Setting up variables with None values to enable a check if they are empty
+# Setting up variables with None-values to enable a check if they are empty
 latitude = None
 longitude = None
 heading = None
@@ -23,8 +23,12 @@ heading = None
 
 # Creating the Serial object used for the communication
 ser = serial.Serial( 
-    port='COM12',   # What port the Arduino is connected
-    baudrate=9600,       # The speed at which the device communicate
+    # What port the Arduino is connected to in windows, on linux this would be something like-
+    # '/dev/ttyACM0' or '/dev/ttyUSB0
+    port='COM12',   
+
+    # The speed at which the device communicate
+    baudrate=9600,       
     parity=serial.PARITY_NONE, 
     stopbits=serial.STOPBITS_ONE, 
     bytesize=serial.EIGHTBITS, 
@@ -101,7 +105,6 @@ if not cap.isOpened():
 fps = cap.get(cv2.CAP_PROP_FPS)
 width = IMAGE_WIDTH
 height = IMAGE_WIDTH
-
 
 frame = 0
 
