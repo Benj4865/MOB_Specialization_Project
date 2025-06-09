@@ -57,7 +57,7 @@ def read_Serial_data():
 
 
 
-def calc_mob_pos(image_center_geo_pos, image_heading, detection_coordinate):
+def calc_pob_pos(image_center_geo_pos, image_heading, detection_coordinate):
     # Set up some local variables to make the code easier to read
     angle_rad = math.radians(image_heading) *-1
     detection_x, detection_y = detection_coordinate
@@ -91,10 +91,10 @@ def calc_mob_pos(image_center_geo_pos, image_heading, detection_coordinate):
     return mob_geo_pos
 
 
-# Load YOLOv11 model
+## Load YOLOv11 model
 model = YOLO('best3.pt')  # Replace with the correct path/model name
 
-# Open Webcam
+## Open Webcam
 cap = cv2.VideoCapture(0)
 
 if not cap.isOpened():
@@ -102,52 +102,48 @@ if not cap.isOpened():
     exit()
 
 
-fps = cap.get(cv2.CAP_PROP_FPS)
-width = IMAGE_WIDTH
-height = IMAGE_WIDTH
-
-frame = 0
-
 while cap.isOpened():
     ret, frame = cap.read()
     if not ret:
         break
 
-    # Run inference
+    ## Run inference using loaded model
     results = model(frame)[0]
     detectionID = 0
 
-    # Getting newest data from serial
+    # Getting newest data from serial connection
     serial_data = read_Serial_data()
 
-    #Only update heading, latitude and longitude are valid.
+    #Only update when heading, latitude and longitude are valid.
     if serial_data is not None:
         (heading, latitude, longitude) = serial_data
         image_center_geo_pos = (latitude, longitude)
 
-    # Draw detections
-    for box in results.boxes:
-        x1, y1, x2, y2 = map(int, box.xyxy[0])
-        conf = box.conf[0]
-        cls = int(box.cls[0])
+
+    # Get detection-coordinates and make prediction for each detection in the frame
+    for detection in results.boxes:
+        x1, y1, x2, y2 = map(int, detection.xyxy[0])
+        conf = detection.conf[0]
+        cls = int(detection.cls[0])
         label = f"{model.names[cls]} {conf:.2f}"
 
-        #detection_coordinate = 0,0
+        ## Setting up detection coordinate variables
         z1 = x1
         z2 = y1
         detection_coordinate = z1,z2
         d = str(detection_coordinate)
         print("Detection_Coordinate: " + d)
 
+        ## If not invalid data is present in the serial data, then calculate the position of the detection
         if latitude is not None and longitude is not None and heading is not None:
 
             # Calculating the position of the detection based on the image center position, heading and detection coordinate
-            mob_geo_pos = calc_mob_pos(image_center_geo_pos, heading, detection_coordinate)
+            pob_Geo_Pos = calc_pob_pos(image_center_geo_pos, heading, detection_coordinate)
 
-
+    ## Setting up escape-key if the user wants to stop the program
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
+## Releasing the video capture object and closing all OpenCV windows upon exit
 cap.release()
-out.release()
 cv2.destroyAllWindows()
