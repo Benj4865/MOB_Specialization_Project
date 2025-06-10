@@ -66,7 +66,7 @@ def calc_pob_pos(image_center_geo_pos, image_heading, detection_coordinate):
     image_center_x = IMAGE_WIDTH / 2
     image_center_y = IMAGE_HEIGHT / 2
 
-    # Rotation matrix multiplication to get rotated x & y
+    ## Rotation matrix multiplication to get image coordinates "rotated on x & y"
     relative_x = (detection_x - image_center_x) * math.cos(angle_rad) - (image_center_y - detection_y) * math.sin(angle_rad)
     relative_y = (detection_x - image_center_x) * math.sin(angle_rad) + (image_center_y - detection_y) * math.cos(angle_rad)
     true_detection_x = image_center_x + relative_x
@@ -84,6 +84,7 @@ def calc_pob_pos(image_center_geo_pos, image_heading, detection_coordinate):
     offset_north_rad = distance_north / R
     offset_east_rad = distance_east / (R * math.cos(math.pi * image_center_geo_pos[0] / 180))
 
+    ## Calculate the new latitude and longitude based on the offsets
     mob_latitude = image_center_geo_pos[0] + offset_north_rad * 180 / math.pi
     mob_longitude = image_center_geo_pos[1] + offset_east_rad * 180 / math.pi
 

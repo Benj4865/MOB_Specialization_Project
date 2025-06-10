@@ -72,7 +72,7 @@ if not cap.isOpened():
     print("Error opening video file.")
     exit()
 
-## Setting up the output settings for the debug video
+## Setting up the output settings for the debug video like format, framerate, width and height
 output_path = 'output_yolov11.avi'
 fourcc = cv2.VideoWriter_fourcc(*'XVID')
 fps = cap.get(cv2.CAP_PROP_FPS)
@@ -97,10 +97,10 @@ while cap.isOpened():
 
 
     # Draw detections
-    for box in results.boxes:
-        x1, y1, x2, y2 = map(int, box.xyxy[0])
-        conf = box.conf[0]
-        cls = int(box.cls[0])
+    for detection in results.boxes:
+        x1, y1, x2, y2 = map(int, detection.xyxy[0])
+        conf = detection.conf[0]
+        cls = int(detection.cls[0])
         label = f"{model.names[cls]} {conf:.2f}"
 
         ## Setting up the detection coordinate
@@ -115,6 +115,7 @@ while cap.isOpened():
 
         s = str(mob_geo_pos)
         print(s)
+        ## Drawing the bounding box and label on the frame
         text = str(detectionID)
         cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
         cv2.putText(frame, text + ": " + label, (x1, y1 - 5),
@@ -126,7 +127,7 @@ while cap.isOpened():
             cv2.putText(frame, text + " " + s,(100,200),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
         detectionID += 1
-
+        ## Pushing the frame to the view and writing it to the output video file
     cv2.imshow("YOLOv11 Detection", frame)
     out.write(frame)
 
