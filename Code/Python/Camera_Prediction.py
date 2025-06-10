@@ -58,6 +58,7 @@ def read_Serial_data():
 
 
 def calc_pob_pos(image_center_geo_pos, image_heading, detection_coordinate):
+
     # Set up some local variables to make the code easier to read
     angle_rad = math.radians(image_heading) *-1
     detection_x, detection_y = detection_coordinate
@@ -91,7 +92,7 @@ def calc_pob_pos(image_center_geo_pos, image_heading, detection_coordinate):
 
 
 ## Load YOLOv11 model
-model = YOLO('best3.pt')  # Replace with the correct path/model name
+model = YOLO('best3.pt')
 
 ## Open Webcam
 cap = cv2.VideoCapture(0)
