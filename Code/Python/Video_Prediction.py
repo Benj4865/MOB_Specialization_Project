@@ -1,5 +1,6 @@
 ## Importing pakages and setting up the environment for YOLOv11 object detection and the calculations
 ## Some of the generic setup and runinng of the YOLOv11 model is based on the Ultralytics YOLOv11 documentation at: https://docs.ultralytics.com/models/yolo11/#usage-examples
+## Some of the Haversine implementation is inspired by: https://www.geeksforgeeks.org/haversine-formula-to-find-distance-between-two-points-on-a-sphere/
 import cv2
 import math
 from ultralytics import YOLO 
