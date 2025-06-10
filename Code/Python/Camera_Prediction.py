@@ -71,7 +71,6 @@ def calc_pob_pos(image_center_geo_pos, image_heading, detection_coordinate):
     true_detection_y = image_center_y + relative_y
 
     # Calculate detected object's distance (meters) relative to center of image
-    # This first alpha version does not do lens correction, but it is still pretty accurate (error is less than 50 cm)
     distance_east = (true_detection_x - image_center_x) / SCALE_FACTOR
     distance_north = (true_detection_y - image_center_y) / SCALE_FACTOR
 
@@ -101,7 +100,7 @@ if not cap.isOpened():
     print("Error opening video file.")
     exit()
 
-
+## Continueing to run as long as the video capture is opened and accessible
 while cap.isOpened():
     ret, frame = cap.read()
     if not ret:
